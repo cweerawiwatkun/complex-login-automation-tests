@@ -1,0 +1,77 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+# ฟังก์ชันเพื่อทำการล็อกอิน
+def login(driver, username_input, password_input):
+    username = driver.find_element(By.NAME, "username")
+    password = driver.find_element(By.NAME, "password")
+    username.clear()
+    password.clear()
+    username.send_keys(username_input)
+    password.send_keys(password_input)
+    login_button = driver.find_element(By.XPATH, "//button[@type='submit']")
+    login_button.click()
+    time.sleep(3)
+
+# ฟังก์ชันเพื่อทดสอบการล็อกเอาท์
+def logout(driver):
+    logout_button = driver.find_element(By.ID, "logout")
+    logout_button.click()
+    time.sleep(2)
+
+# ฟังก์ชันหลักสำหรับการทดสอบ
+def test_login():
+    driver = webdriver.Chrome()
+    driver.get("https://example.com/login")
+    time.sleep(3)
+    
+    # Test Case 1: Valid Login
+    print("Test Case 1: Valid Login")
+    login(driver, "testuser", "testpassword")
+    try:
+        welcome_message = driver.find_element(By.XPATH, "//div[contains(text(), 'Welcome')]")
+        assert welcome_message.is_displayed(), "Login Failed: Welcome message not displayed"
+        print("Valid Login Test Passed: Welcome message displayed")
+    except Exception as e:
+        print(f"Valid Login Test Failed: {e}")
+
+    # Test Case 2: Invalid Login
+    print("Test Case 2: Invalid Login")
+    login(driver, "invaliduser", "wrongpassword")
+    try:
+        error_message = driver.find_element(By.XPATH, "//div[contains(text(), 'Invalid credentials')]")
+        assert error_message.is_displayed(), "Login Failed: Error message not displayed"
+        print("Invalid Login Test Passed: Error message displayed")
+    except Exception as e:
+        print(f"Invalid Login Test Failed: {e}")
+
+    # Test Case 3: Blank Fields
+    print("Test Case 3: Blank Fields")
+    login(driver, "", "")
+    try:
+        blank_error_message = driver.find_element(By.XPATH, "//div[contains(text(), 'Fields cannot be blank')]")
+        assert blank_error_message.is_displayed(), "Login Failed: Blank fields error message not displayed"
+        print("Blank Fields Test Passed: Error message displayed")
+    except Exception as e:
+        print(f"Blank Fields Test Failed: {e}")
+    
+    # Test Case 4: Logout Functionality
+    print("Test Case 4: Logout Functionality")
+    login(driver, "testuser", "testpassword")
+    try:
+        logout(driver)
+        login_button = driver.find_element(By.XPATH, "//button[@type='submit']")
+        assert login_button.is_displayed(), "Logout Failed: Login button not displayed"
+        print("Logout Test Passed: Login button displayed after logout")
+    except Exception as e:
+        print(f"Logout Test Failed: {e}")
+    
+    # ถ่ายภาพหน้าจอหลังการทดสอบ
+    driver.save_screenshot("complex_login_test_result.png")
+    
+    # ปิดเบราว์เซอร์
+    driver.quit()
+
+# เรียกใช้การทดสอบ
+test_login()
